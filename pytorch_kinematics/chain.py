@@ -143,7 +143,11 @@ class SerialChain(Chain):
         link_transforms = {}
         trans = tf.Transform3d(matrix=world.get_matrix().repeat(N, 1, 1))
         for f in self._serial_frames:
-            trans = trans.compose(f.get_transform(th[:, cnt].view(N, 1)))
+            try:
+                theta = th[:, cnt].view(N, 1)
+            except IndexError:
+                theta = torch.zeros_like(th)
+            trans = trans.compose(f.get_transform(theta))
             link_transforms[f.link.name] = trans.compose(f.link.offset)
             if f.joint.joint_type != "fixed":
                 cnt += 1
